@@ -28,12 +28,20 @@ final listaVeiculos = [
     corCard: Colors.yellow.shade100,
   ),
   Veiculo(
-    marca: 'Honda',
+    marca: 'Fiat',
     modelo: 'Pulse',
     ano: 2020,
     preco: 65000.00,
     imagemUrl: 'assets/pulse.jfif',
     corCard: Colors.green.shade100,
+  ),
+  Veiculo(
+    marca: 'Vowksvagen',
+    modelo: 'Tera',
+    ano: 2025,
+    preco: 150000.00,
+    imagemUrl: 'assets/tera.jpg',
+    corCard: Colors.blue.shade100,
   ),
 ];
 

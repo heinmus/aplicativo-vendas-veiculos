@@ -12,10 +12,10 @@ class CustomDrawer extends StatelessWidget {
         children: [
           const DrawerHeader(
             decoration: BoxDecoration(
-              color: Colors.blueAccent,
+              color: Color.fromARGB(255, 142, 179, 243),
             ),
             child: Text(
-              'MyApp Veículos',
+              'Aplicativo de veículos',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 23, 

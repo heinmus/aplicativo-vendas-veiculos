@@ -29,7 +29,7 @@ class _BuildVeiculosGrid extends StatelessWidget {
           imageUrl: carro.imagemUrl,
           icon: Icons.directions_car,
           onTap: () {
-            // quando clica no card no caso o protudo do catalogo vai para a tela de detalhes
+            // quando clica no card o protudo do catalogo vai para a tela de detalhes
             Navigator.pushNamed(context, '/details', arguments: carro);
           },
         );
@@ -54,13 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
     const _BuildVeiculosGrid(),
     const Center(
       child: Text(
-        'Aba de Busca (em desenvolvimento)',
+        'Aba de Busca',
         style: TextStyle(fontSize: 22),
       ),
     ),
   ];
 
-  // muda de aba 
   void _mudarAba(int index) {
     setState(() {
       _abaSelecionada = index;

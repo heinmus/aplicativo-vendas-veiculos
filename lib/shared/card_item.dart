@@ -23,7 +23,7 @@ class CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: backgroundColor,
+      color: Colors.blue.shade100,
       elevation: 3, 
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),

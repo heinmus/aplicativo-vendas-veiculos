@@ -1,104 +1,101 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../core/favorites_provider.dart';
+import '../core/veiculo_model.dart';
 
 class CardItem extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final String? detail;
-  final Color backgroundColor;
-  final String? imageUrl;
-  final IconData icon;
-  final VoidCallback? onTap;
+  final Vehicle vehicle;
 
-  const CardItem({
-    super.key,
-    required this.title,
-    this.subtitle,
-    this.detail,
-    required this.backgroundColor,
-    this.imageUrl,
-    required this.icon,
-    this.onTap,
-  });
+  const CardItem({super.key, required this.vehicle});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.blue.shade100,
-      elevation: 3, 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Parte de cima: imagem ou ícone
-              Expanded(
-                child: Center(
-                  child: (imageUrl != null && imageUrl!.isNotEmpty)
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            imageUrl!,
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, erro, stack) {
-                              return Icon(
-                                icon,
-                                size: 45,
-                                color: Colors.red.shade400,
-                              );
-                            },
-                          ),
-                        )
-                      : Icon(
-                          icon,
-                          size: 48,
-                          color: Colors.blue.shade800,
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: () => context.go('/details', extra: vehicle),
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        elevation: 5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        clipBehavior: Clip.antiAlias, // Garante que a imagem respeite as bordas arredondadas
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Hero(
+              tag: vehicle.id, // Tag para a animação da imagem
+              child: Image.asset(
+                vehicle.imageUrl!,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    vehicle.model,
+                    style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'R\$ ${vehicle.price.toStringAsFixed(2)}',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Um excelente carro.',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Consumer<FavoritesProvider>(
+                  builder: (context, favoritesProvider, child) {
+                    final isFavorite = favoritesProvider.isFavorite(vehicle);
+                    return Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red.shade400 : colorScheme.onSurface, 
                         ),
-                ),
-              ),
+                        iconSize: 30,
+                        tooltip: isFavorite ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos',
+                        onPressed: () {
+                          favoritesProvider.toggleFavorite(vehicle);
 
-              const SizedBox(height: 8),
-
-              // Título 
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isFavorite 
+                                  ? '${vehicle.model} removido dos favoritos.' 
+                                  : '${vehicle.model} adicionado aos favoritos.'
+                                ),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                        },
+                      ),
+                    );
+                  },
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              if (subtitle != null)
-                Text(
-                  subtitle!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-              if (detail != null)
-                Text(
-                  detail!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                  ),
-                ),
-            ],
-          ),
-        ),
+            )
+          ],),
       ),
     );
   }

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/core/data.dart';
-import 'package:myapp/shared/card_item.dart';
+import 'package:provider/provider.dart';
+import '../core/theme_provider.dart';
 
-//tela dos membros do grupo
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
@@ -10,58 +9,46 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sobre o App e o Grupo'),
+        title: const Text('Sobre o App'),
+        actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return IconButton(
+                icon: Icon(themeProvider.themeMode == ThemeMode.dark
+                    ? Icons.light_mode
+                    : Icons.dark_mode),
+                onPressed: () => themeProvider.toggleTheme(),
+                tooltip: 'Alternar Tema',
+              );
+            },
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18), 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              infoApp['appNome'] ?? 'Aplicativo de veículos',
-              style: const TextStyle(
-                fontSize: 27,
-                fontWeight: FontWeight.bold,
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FlutterLogo(size: 100),
+              SizedBox(height: 24),
+              Text(
+                'Concessionária App',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-            ),
-            Text(
-              'Versão: ${infoApp['versao'] ?? '1.0'}',
-              style: TextStyle(
-                fontSize: 15.5,
-                color: Colors.grey.shade700,
+              SizedBox(height: 12),
+              Text(
+                'Versão 1.0.0',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
-            ),
-
-            const Divider(height: 25),
-
-            const Text(
-              'Integrantes do Grupo:',
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-
-            // Grid com as informaçoes do membros da equipe 
-            GridView.builder(
-              itemCount: infoMembros.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 0.95,
+              SizedBox(height: 24),
+              Text(
+                'Este aplicativo é um projeto de demonstração para a disciplina de Desenvolvimento Mobile, ilustrando um sistema de catálogo de veículos com autenticação e favoritos usando Flutter, Provider e SharedPreferences.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
               ),
-              itemBuilder: (context, i) {
-                final membro = infoMembros[i];
-                return CardItem(
-                  title: membro['nome'] ?? 'Sem nome',
-                  subtitle: membro['funcao'] ?? 'Função não informada',
-                  icon: Icons.person,
-                  backgroundColor: Colors.grey.shade200,
-                );
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

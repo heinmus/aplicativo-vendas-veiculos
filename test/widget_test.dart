@@ -1,30 +1,55 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:myapp/core/auth_service.dart';
+import 'package:myapp/core/theme_provider.dart';
 import 'package:myapp/main.dart';
+import 'package:myapp/core/favorites_provider.dart';
+import 'package:myapp/core/vehicle_provider.dart';
+import 'package:myapp/features/login_screen.dart';
+import 'package:provider/provider.dart';
 
+import 'widget_test.mocks.dart';
+
+@GenerateMocks([AuthService])
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  late MockAuthService mockAuthService;
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  setUp(() {
+    mockAuthService = MockAuthService();
+    // Required for the RefreshListenable to not throw an exception
+    when(mockAuthService.addListener(any)).thenAnswer((_) {});
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('Renders LoginScreen when not authenticated', (WidgetTester tester) async {
+    // Arrange
+    when(mockAuthService.isLoggedIn).thenReturn(false);
+    when(mockAuthService.username).thenReturn(null);
+
+    // Build the app and trigger a frame.
+    // We need to provide all the necessary providers that the app uses.
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<AuthService>.value(value: mockAuthService),
+          ChangeNotifierProvider(create: (context) => ThemeProvider()),
+          ChangeNotifierProvider(create: (context) => VehicleProvider(mockAuthService)),
+          ChangeNotifierProxyProvider<AuthService, FavoritesProvider>(
+            create: (context) => FavoritesProvider(null),
+            update: (context, auth, _) => FavoritesProvider(auth),
+          ),
+        ],
+        child: MyApp(authService: mockAuthService),
+      ),
+    );
+
+    // Let the router handle the initial navigation
+    await tester.pumpAndSettle();
+
+    // Verify that the LoginScreen is present.
+    expect(find.byType(LoginScreen), findsOneWidget);
   });
 }

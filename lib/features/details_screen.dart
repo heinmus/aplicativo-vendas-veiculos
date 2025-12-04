@@ -1,101 +1,94 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/core/veiculo_model.dart';
+import 'package:provider/provider.dart';
+import '../core/favorites_provider.dart';
+import '../core/theme_provider.dart';
+import '../core/veiculo_model.dart';
 
-// tela de quando o cliente clica no produto no catalogo
 class DetailsScreen extends StatelessWidget {
-  const DetailsScreen({super.key});
+  final Vehicle vehicle;
+  const DetailsScreen({super.key, required this.vehicle});
 
   @override
   Widget build(BuildContext context) {
-    // Recupera o objeto passado pela navegação
-    final veiculo = ModalRoute.of(context)!.settings.arguments as Veiculo?;
-
-    if (veiculo == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Erro')),
-        body: const Center(
-          child: Text('Veículo não encontrado.'),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('${veiculo.marca} ${veiculo.modelo}'),
+        title: Text(vehicle.model),
+        actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return IconButton(
+                icon: Icon(themeProvider.themeMode == ThemeMode.dark
+                    ? Icons.light_mode
+                    : Icons.dark_mode),
+                onPressed: () => themeProvider.toggleTheme(),
+                tooltip: 'Alternar Tema',
+              );
+            },
+          ),
+          Consumer<FavoritesProvider>(
+            builder: (context, favoritesProvider, child) {
+              final isFavorite = favoritesProvider.isFavorite(vehicle);
+              return IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : null,
+                ),
+                onPressed: () {
+                  favoritesProvider.toggleFavorite(vehicle);
+                },
+                tooltip: isFavorite ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos',
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // imagem do veículo (ou ícone de erro se não carregar)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
+            Hero(
+              tag: vehicle.id,
               child: Image.asset(
-                veiculo.imagemUrl,
-                height: 200,
+                vehicle.imageUrl!,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) {
-                  return Container(
-                    height: 200,
-                    color: veiculo.corCard.withAlpha(120),
-                    child: const Center(
-                      child: Icon(Icons.error, size: 45),
-                    ),
-                  );
-                },
+                height: 250,
               ),
             ),
-
             const SizedBox(height: 20),
-
-            _infoRow('Marca:', veiculo.marca),
-            _infoRow('Modelo:', veiculo.modelo),
-            _infoRow('Ano:', veiculo.ano.toString()),
-            _infoRow('Preço:', 'R\$ ${veiculo.preco.toStringAsFixed(2)}', isPrice: true),
-
-            const SizedBox(height: 25),
-
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Interesse no ${veiculo.modelo} enviado!'),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.phone),
-                label: const Text('Entrar em contato'),
-              ),
+            Text(
+              vehicle.model,
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Preço: R\$ ${vehicle.price.toStringAsFixed(2)}',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).colorScheme.primary),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Descrição',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const Divider(height: 16),
+            Text(
+              'Um excelente carro.',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+             const SizedBox(height: 24),
+             Text(
+              'Detalhes Adicionais',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const Divider(height: 16),
+            ListTile(
+              leading: Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.secondary),
+              title: const Text('Ano'),
+              subtitle: Text(vehicle.year.toString()),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // widget que exibe as linhas com as iformaçoes
-  Widget _infoRow(String titulo, String valor, {bool isPrice = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            titulo,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            valor,
-            style: TextStyle(
-              fontSize: 17,
-              color: isPrice ? Colors.green.shade700 : Colors.black87,
-            ),
-          ),
-        ],
       ),
     );
   }

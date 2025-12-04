@@ -1,94 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/core/data.dart';
-import 'package:myapp/shared/custom_drawer.dart';
-import 'package:myapp/shared/card_item.dart';
+import 'package:provider/provider.dart';
+import '../core/theme_provider.dart';
+import '../core/vehicle_provider.dart';
+import '../shared/card_item.dart';
+import '../shared/custom_drawer.dart';
 
-// Widget que monta o grid com os veículos
-class _BuildVeiculosGrid extends StatelessWidget {
-  const _BuildVeiculosGrid();
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(10),
-      itemCount: listaVeiculos.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, 
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 0.8, 
-      ),
-      itemBuilder: (context, index) {
-        final carro = listaVeiculos[index];
-
-        return CardItem(
-          title: '${carro.marca} ${carro.modelo}',
-          subtitle: 'R\$ ${carro.preco.toStringAsFixed(2)}',
-          detail: 'Ano: ${carro.ano}',
-          backgroundColor: carro.corCard,
-          imageUrl: carro.imagemUrl,
-          icon: Icons.directions_car,
-          onTap: () {
-            // quando clica no card o protudo do catalogo vai para a tela de detalhes
-            Navigator.pushNamed(context, '/details', arguments: carro);
-          },
-        );
-      },
-    );
-  }
-}
-
-// Tela principal do aplicativo
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _abaSelecionada = 0; //faz o controle de qual aba esta sendo selecionada
-
-  // lista que contem os conteudos das abas
-  static final List<Widget> _conteudos = [
-    const _BuildVeiculosGrid(),
-    const Center(
-      child: Text(
-        'Aba de Busca',
-        style: TextStyle(fontSize: 22),
-      ),
-    ),
-  ];
-
-  void _mudarAba(int index) {
-    setState(() {
-      _abaSelecionada = index;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final vehicles = Provider.of<VehicleProvider>(context).vehicles;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Catálogo de Veículos'),
-        backgroundColor: Colors.blue[900],
-      ),
-      drawer: const CustomDrawer(),
-      body: _conteudos[_abaSelecionada],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.directions_car),
-            label: 'Catálogo',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Buscar',
+        actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return IconButton(
+                icon: Icon(themeProvider.themeMode == ThemeMode.dark
+                    ? Icons.light_mode
+                    : Icons.dark_mode),
+                onPressed: () => themeProvider.toggleTheme(),
+                tooltip: 'Alternar Tema',
+              );
+            },
           ),
         ],
-        currentIndex: _abaSelecionada,
-        selectedItemColor: Colors.blue[900],
-        onTap: _mudarAba,
+      ),
+      drawer: const CustomDrawer(),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: vehicles.length,
+        itemBuilder: (context, index) {
+          return CardItem(vehicle: vehicles[index]);
+        },
       ),
     );
   }

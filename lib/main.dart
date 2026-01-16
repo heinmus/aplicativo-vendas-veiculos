@@ -6,12 +6,17 @@ import 'core/auth_service.dart';
 import 'core/favorites_provider.dart';
 import 'core/theme_provider.dart';
 import 'core/vehicle_provider.dart';
+import 'package:camera/camera.dart';
+
+late List<CameraDescription> cameras;
 
 void main() async { // Main agora é assíncrona
   WidgetsFlutterBinding.ensureInitialized();
-  final authService = AuthService();
-  await authService.init(); // Garante que o status de login seja carregado antes do app iniciar
 
+  cameras = await availableCameras(); // 👈 linha nova
+
+  final authService = AuthService();
+  await authService.init();
   runApp(
     MultiProvider(
       providers: [
